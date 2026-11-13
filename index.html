@@ -1,0 +1,491 @@
+<!doctype html>
+<html lang="da">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ugerapport, Fjordby Kommune (eksempel) | Omar Slaiman</title>
+<meta name="description" content="Et eksempel på en ugentlig kunderapport om samkørsel. Tallene er opdigtede.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap">
+<style>
+:root{
+  --paper:#FAF7F2; --panel:#F2EDE4; --line:#DDD7CE; --ink:#1F1D1A; --text:#3A3733; --muted:#6F6A63;
+  --rust:#9C4A26; --rust-soft:#EBD9CD; --good:#3F6B4F; --good-soft:#DCE7DD; --warn:#A8741A;
+  --serif:'Instrument Serif',Georgia,serif; --sans:'IBM Plex Sans','Helvetica Neue',Arial,sans-serif; --mono:'IBM Plex Mono',Menlo,monospace;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--text);font-family:var(--sans);font-size:16px;line-height:1.55}
+.wrap{max-width:940px;margin:0 auto;padding:0 24px}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--rust);outline-offset:2px}
+
+/* Eksempel-banner */
+.notice{background:var(--ink);color:#F3EEE6;font-size:14px}
+.notice .wrap{padding-top:9px;padding-bottom:9px}
+.notice b{font-weight:600}
+
+/* Top */
+header.top{padding:34px 0 0}
+.who{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:14px;color:var(--muted);border-bottom:3px solid var(--rust);padding-bottom:10px}
+.who strong{color:var(--ink);font-weight:600}
+h1{font-family:var(--serif);font-weight:400;font-size:clamp(34px,6vw,58px);line-height:1.04;color:var(--ink);margin:26px 0 10px;letter-spacing:-0.01em;max-width:20ch}
+.lede{font-size:18px;max-width:62ch;margin:0 0 26px}
+
+/* Kontrolpanel */
+.controls{position:sticky;top:0;z-index:5;background:var(--paper);border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:12px 0}
+.controls .row{display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+.weekctl{display:flex;align-items:center;gap:10px;flex:1 1 320px;min-width:260px}
+.weekctl label{font-size:14px;color:var(--muted);white-space:nowrap}
+.weekctl output{font-family:var(--serif);font-size:26px;color:var(--ink);min-width:74px;line-height:1}
+.step{width:34px;height:34px;border:1px solid var(--line);background:transparent;border-radius:50%;cursor:pointer;font-size:16px;line-height:1}
+.step:hover{border-color:var(--rust);color:var(--rust)}
+.step:disabled{opacity:.35;cursor:default}
+input[type=range]{flex:1;accent-color:var(--rust);min-width:90px}
+.seg{display:inline-flex;border:1px solid var(--ink);border-radius:999px;overflow:hidden}
+.seg button{border:0;background:transparent;padding:8px 16px;font-size:14px;font-weight:500;cursor:pointer}
+.seg button[aria-pressed=true]{background:var(--ink);color:var(--paper)}
+.seglabel{font-size:14px;color:var(--muted);margin-right:8px}
+
+/* Sektioner */
+section{padding:30px 0;border-bottom:1px solid var(--line)}
+section:last-of-type{border-bottom:0}
+h2{font-family:var(--serif);font-weight:400;font-size:28px;line-height:1.15;color:var(--ink);margin:0 0 4px}
+.sub{color:var(--muted);font-size:15px;margin:0 0 18px;max-width:64ch}
+.headline{font-family:var(--serif);font-size:clamp(24px,3.6vw,34px);line-height:1.2;color:var(--ink);margin:0;max-width:30ch}
+.headline em{font-style:normal;color:var(--rust)}
+
+/* Nøgletal */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-top:22px;border-top:1px solid var(--line)}
+.kpi{padding:14px 16px 4px 0;border-right:1px solid var(--line);padding-left:16px}
+.kpi:first-child{padding-left:0}
+.kpi:last-child{border-right:0}
+.kpi .n{font-family:var(--serif);font-size:38px;line-height:1.05;color:var(--ink);font-variant-numeric:tabular-nums}
+.kpi .l{font-size:14px;color:var(--muted)}
+.kpi .d{font-size:13px;font-family:var(--mono);margin-top:4px}
+.up{color:var(--good)} .down{color:var(--rust)} .flat{color:var(--muted)}
+
+/* Graf */
+.chartbox{margin-top:6px}
+svg.chart{width:100%;height:auto;display:block;touch-action:manipulation}
+.legend{display:flex;gap:18px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin-top:8px}
+.legend i{display:inline-block;width:22px;height:0;border-top:2px solid var(--rust);vertical-align:middle;margin-right:6px}
+.legend i.t{border-top:2px dashed var(--muted)}
+.legend i.f{border:0;height:10px;background:var(--panel);outline:1px solid var(--line)}
+.legend i.c{border:0;width:9px;height:9px;border-radius:50%;background:var(--ink)}
+
+/* Indsatser */
+.areas{width:100%;border-collapse:collapse;font-size:15px}
+.areas th{font-weight:500;color:var(--muted);font-size:13px;text-align:left;padding:0 10px 8px 0;border-bottom:1px solid var(--line)}
+.areas td{padding:12px 10px 12px 0;border-bottom:1px solid var(--line);vertical-align:middle}
+.areas td.num,.areas th.num{text-align:right;font-variant-numeric:tabular-nums}
+.areas .name{color:var(--ink);font-weight:600}
+.areas .name small{display:block;font-weight:400;color:var(--muted);font-size:13px}
+.bar{position:relative;height:10px;background:var(--panel);border-radius:2px;min-width:120px}
+.bar span{position:absolute;left:0;top:0;bottom:0;background:var(--rust);border-radius:2px}
+.bar b{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--ink)}
+.pill{display:inline-block;font-size:13px;padding:2px 10px;border-radius:999px;white-space:nowrap}
+.pill.over{background:var(--good-soft);color:var(--good)}
+.pill.ok{background:var(--panel);color:var(--text)}
+.pill.under{background:var(--rust-soft);color:var(--rust)}
+.pill.hol{background:transparent;color:var(--muted);border:1px dashed var(--line)}
+.spark{width:90px;height:26px;display:block}
+.plain{margin:0;padding:0;list-style:none}
+.plain li{padding:10px 0;border-bottom:1px solid var(--line);max-width:68ch}
+.plain li strong{color:var(--ink)}
+
+/* Flag */
+.flags{display:grid;gap:12px}
+.flag{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--line);border-left:4px solid var(--rust);background:#fff}
+.flag.good{border-left-color:var(--good)}
+.flag.note{border-left-color:var(--muted)}
+.flag>div{padding:14px 18px}
+.flag>div+div{border-left:1px solid var(--line);background:var(--paper)}
+.flag h3{font-size:16px;font-weight:600;color:var(--ink);margin:0 0 4px}
+.flag p{margin:0;font-size:15px}
+.flag .tag{font-size:13px;color:var(--muted);margin-bottom:4px}
+
+/* Dagsorden */
+ol.agenda{margin:0;padding-left:22px;max-width:70ch}
+ol.agenda li{padding:6px 0 6px 6px}
+ol.agenda li::marker{font-family:var(--mono);font-size:13px;color:var(--rust)}
+ol.agenda small{color:var(--muted);font-size:14px}
+
+/* Forlængelse */
+.road{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-top:2px solid var(--ink)}
+.road li{padding:14px 14px 0 0;position:relative}
+.road li::before{content:"";position:absolute;top:-7px;left:0;width:12px;height:12px;border-radius:50%;background:var(--paper);border:2px solid var(--ink)}
+.road li.next::before{background:var(--rust);border-color:var(--rust)}
+.road .when{font-family:var(--mono);font-size:13px;color:var(--muted)}
+.road .what{color:var(--ink);font-weight:600;margin:2px 0}
+.road .mine{font-size:14px}
+.road .in{font-family:var(--serif);font-size:22px;color:var(--rust)}
+
+/* Bund */
+footer{background:var(--panel);margin-top:10px;padding:34px 0 44px;font-size:15px}
+footer .cols{display:grid;grid-template-columns:1.4fr 1fr;gap:36px}
+footer h2{font-size:24px;margin-bottom:8px}
+footer p{margin:0 0 10px;max-width:60ch}
+footer a{color:var(--rust)}
+details{margin-top:8px;font-size:14px;color:var(--muted)}
+summary{cursor:pointer}
+
+/* Visninger */
+body[data-view=udv] .only-forv{display:none}
+body[data-view=forv] .only-udv{display:none}
+
+@media (max-width:720px){
+  body{font-size:15px}
+  .kpis{grid-template-columns:repeat(2,1fr)}
+  .kpi{padding-left:0;border-right:0;border-bottom:1px solid var(--line);padding-bottom:12px}
+  .kpi:nth-child(odd){padding-right:14px}
+  .flag{grid-template-columns:1fr}
+  .flag>div+div{border-left:0;border-top:1px solid var(--line)}
+  .road{grid-template-columns:1fr;border-top:0;border-left:2px solid var(--ink);margin-left:6px}
+  .road li{padding:0 0 18px 20px}
+  .road li::before{top:4px;left:-8px}
+  footer .cols{grid-template-columns:1fr}
+  .areas .hide-s{display:none}
+  .controls{position:static}
+}
+@media (prefers-reduced-motion:no-preference){
+  .bar span{transition:width .25s ease}
+}
+@media print{.controls,.notice{display:none} section{break-inside:avoid}}
+</style>
+</head>
+<body data-view="forv">
+
+<div class="notice"><div class="wrap"><b>Eksempel.</b> Fjordby Kommune findes ikke, og alle tal er opdigtede. Siden viser, hvordan jeg vil følge en kunde uge for uge.</div></div>
+
+<header class="top">
+  <div class="wrap">
+    <div class="who">
+      <span><strong>Ugerapport om samkørsel</strong> til Fjordby Kommune</span>
+      <span>Udarbejdet af Omar Slaiman</span>
+    </div>
+    <h1>Samme tal, fortalt til den, der skal bruge dem.</h1>
+    <p class="lede">Træk i ugen, og rapporten skriver sig selv om: nøgletal, advarsler og dagsordenen til næste statusmøde. Skift læser, og de samme tal bliver til en detaljeret gennemgang til forvaltningen eller et kort overblik til udvalget.</p>
+  </div>
+</header>
+
+<div class="controls">
+  <div class="wrap row">
+    <div class="weekctl">
+      <label for="wk">Vælg uge</label>
+      <button class="step" id="prev" aria-label="Forrige uge">‹</button>
+      <input type="range" id="wk" min="0" max="25" step="1" value="25" aria-describedby="wkout">
+      <button class="step" id="next" aria-label="Næste uge">›</button>
+      <output id="wkout" for="wk">Uge 46</output>
+    </div>
+    <div>
+      <span class="seglabel" id="seglbl">Læser</span>
+      <span class="seg" role="group" aria-labelledby="seglbl">
+        <button type="button" data-v="forv" aria-pressed="true">Forvaltningen</button>
+        <button type="button" data-v="udv" aria-pressed="false">Udvalget</button>
+      </span>
+    </div>
+  </div>
+</div>
+
+<main class="wrap">
+
+  <section aria-live="polite">
+    <p class="headline" id="headline"></p>
+    <div class="kpis" id="kpis"></div>
+  </section>
+
+  <section>
+    <h2>Udviklingen over et halvt år</h2>
+    <p class="sub only-forv">Samkørte ture pr. uge mod det mål, vi aftalte ved opstart. Tryk på en uge i grafen for at se rapporten for den uge.</p>
+    <p class="sub only-udv">Samkørte ture pr. uge siden maj, sammenlignet med målet i aftalen.</p>
+    <div class="chartbox"><svg class="chart" id="chart" viewBox="0 0 760 290" role="img" aria-label="Graf over samkørte ture pr. uge mod mål"></svg></div>
+    <div class="legend"><span><i></i>Samkørte ture</span><span><i class="t"></i>Mål</span><span><i class="f"></i>Ferie</span><span><i class="c"></i>Kampagne</span></div>
+  </section>
+
+  <section class="only-forv">
+    <h2>De fire indsatser</h2>
+    <p class="sub">Stregen i søjlen er ugens mål. De små kurver viser de seneste otte uger.</p>
+    <table class="areas">
+      <thead><tr><th>Indsats</th><th class="num">Ture</th><th class="num hide-s">Mål</th><th class="hide-s">Mod mål</th><th>Status</th><th class="hide-s">8 uger</th></tr></thead>
+      <tbody id="areas"></tbody>
+    </table>
+  </section>
+
+  <section class="only-udv">
+    <h2>Hvad betyder det for borgerne?</h2>
+    <ul class="plain" id="plain"></ul>
+  </section>
+
+  <section>
+    <h2 class="only-forv">Hvor skoen trykker</h2>
+    <h2 class="only-udv">Det skal I vide</h2>
+    <p class="sub only-forv">Til venstre det, tallene viser. Til højre det, jeg gør ved det, før I behøver at spørge.</p>
+    <div class="flags" id="flags"></div>
+  </section>
+
+  <section class="only-forv">
+    <h2>Til næste statusmøde</h2>
+    <p class="sub">Forslag til dagsorden, bygget ud fra ugens tal. Den ændrer sig, når du vælger en anden uge.</p>
+    <ol class="agenda" id="agenda"></ol>
+  </section>
+
+  <section>
+    <h2>Frem mod forlængelsen</h2>
+    <p class="sub only-forv">Aftalen løber til udgangen af juni 2027. Forlængelsen bliver afgjort længe før, så tallene skal være klar, når forvaltningen skriver sin indstilling.</p>
+    <p class="sub only-udv">Aftalen løber til udgangen af juni 2027. Her er, hvornår I får sagen.</p>
+    <ol class="road" id="road"></ol>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap cols">
+    <div>
+      <h2>Sådan er rapporten lavet</h2>
+      <p>Jeg har bygget siden med Claude. I en rigtig portefølje henter et flow ugens tal, skriver udkastet og markerer afvigelserne. Jeg læser hver rapport, før den går til kunden, og samtalen tager jeg selv.</p>
+      <p>Pointen med de to læsere kommer fra mit eget arbejde: den samme analyse skal præsenteres forskelligt for en, der vil forstå tallene til bunds, og en, der vil vide, hvad der skal ske.</p>
+      <details>
+        <summary>Antagelser bag tallene</summary>
+        <p>Alle tal er opdigtede. En samkørt tur er regnet som 17 sparede bilkilometer og 0,13 kg CO₂ pr. kilometer. Aktive brugere er anslået ud fra antal ture. Ferieuger tæller ikke med, når en indsats vurderes mod mål.</p>
+      </details>
+    </div>
+    <div>
+      <h2>Omar Slaiman</h2>
+      <p>Ansøger til stillingen som Key Account Manager hos nabogo.</p>
+      <p><a href="mailto:omar.slaiman7@gmail.com">omar.slaiman7@gmail.com</a><br>+45 50 62 09 49</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+  // ---------- Model (opdigtede tal, beregnet deterministisk) ----------
+  var FIRST=21, N=26, KM=17, CO2=0.13;
+  var weeks=[]; for(var i=0;i<N;i++) weeks.push(FIRST+i);
+  function hol(kind,w){
+    if(kind==="school"){ if(w>=27&&w<=32) return 0.08; if(w===26) return 0.55; if(w===42) return 0.25; return 1; }
+    if(w>=28&&w<=30) return 0.45; if(w===27||w===31) return 0.75; if(w===42) return 0.8; return 1;
+  }
+  var AREAS=[
+    {id:"ung", name:"Ungdomsuddannelser", who:"Elever på gymnasiet og erhvervsskolen", kind:"school", s:168,e:440,ts:170,te:400,ph:0.4,
+      plain:"Elever, der bor uden for byen, kommer i skole uden at være afhængige af én bus om morgenen."},
+    {id:"arb", name:"Kommunens arbejdspladser", who:"Rådhus, plejecentre og skoler", kind:"work", s:120,e:300,ts:120,te:290,ph:1.7,
+      plain:"Kommunens egne medarbejdere deler bilen til arbejde, og der er færre biler på parkeringspladserne."},
+    {id:"land", name:"Landsbyruter", who:"Pendlere fra de fire største landsbyer", kind:"work", s:60,e:150,ts:60,te:150,ph:2.9,
+      plain:"Borgere i landsbyerne har fået en mulighed mere for at komme til og fra byen."},
+    {id:"erhv", name:"Erhvervsparken", who:"Tre virksomheder med skiftehold", kind:"work", s:45,e:106,ts:45,te:140,ph:4.1, plateau:0.6,
+      plain:"Medarbejdere på skiftehold kører sammen, når busserne ikke passer med mødetiderne."}
+  ];
+  AREAS.forEach(function(a){
+    a.v=[];a.t=[];
+    for(var i=0;i<N;i++){
+      var t=i/(N-1), w=weeks[i];
+      var g=a.plateau?Math.min(1,t/a.plateau):Math.pow(t,1.1);
+      var base=a.s+(a.e-a.s)*g;
+      var wob=1+0.06*Math.sin(w*2.3+a.ph);
+      a.v.push(Math.round(base*wob*hol(a.kind,w)));
+      a.t.push(Math.round(a.ts+(a.te-a.ts)*t));
+    }
+  });
+  var newU=weeks.map(function(w){
+    var b=22+Math.round(4*Math.sin(w*1.3));
+    var extra={34:60,35:45,36:20,39:40,40:18}[w]||0;
+    var tail={43:-2,44:-7,45:-10,46:-12}[w]||0;
+    var f=(w>=27&&w<=31)?0.3:1;
+    return Math.max(4,Math.round((b+extra+tail)*f));
+  });
+  var CAMP=[{w:34,label:"Studiestart"},{w:39,label:"Rådhuset"}];
+  var ROAD=[
+    {abs:53+3, when:"Uge 3, 2027", what:"Effektnotat til forvaltningen", mine:"Jeg leverer tal og to borgerhistorier."},
+    {abs:53+9, when:"Uge 9, 2027", what:"Indstilling til udvalget", mine:"Forvaltningen skriver. Jeg svarer på spørgsmål samme dag."},
+    {abs:53+13, when:"Uge 13, 2027", what:"Udvalget beslutter", mine:"Jeg deltager, hvis udvalget ønsker en gennemgang."},
+    {abs:53+26, when:"Uge 26, 2027", what:"Aftalen udløber", mine:"En forlængelse er på plads i god tid."}
+  ];
+  function sum(arr,i){return arr.reduce(function(s,a){return s+a[i]},0)}
+  function tot(i){return AREAS.reduce(function(s,a){return s+a.v[i]},0)}
+  function tgt(i){return AREAS.reduce(function(s,a){return s+a.t[i]},0)}
+  function isHol(a,i){return hol(a.kind,weeks[i])<0.9}
+  function anyHol(i){return AREAS.some(function(a){return isHol(a,i)})}
+  function status(a,i){
+    if(isHol(a,i)) return {k:"hol",txt:"Ferieuge"};
+    var r=a.v[i]/a.t[i];
+    if(r>=1.05) return {k:"over",txt:"Over mål"};
+    if(r>=0.92) return {k:"ok",txt:"På sporet"};
+    return {k:"under",txt:"Under mål"};
+  }
+  function underStreak(a,i){ var n=0; for(var j=i;j>=0;j--){ if(isHol(a,j)) continue; if(a.v[j]/a.t[j]<0.92) n++; else break; } return n; }
+  function flags(i){
+    var out=[], w=weeks[i];
+    if(anyHol(i)) out.push({k:"note",tag:"Til orientering",h:"Uge "+w+" er ferieuge",p:"Faldet er ventet og tæller ikke med, når indsatserne vurderes mod mål.",act:"Ingen handling. Jeg bruger ugen på at forberede næste kampagne med eventholdet.",short:"Uge "+w+" er ferieuge, så tallene er lave som ventet."});
+    AREAS.forEach(function(a){
+      var st=status(a,i), n=underStreak(a,i), pct=Math.round((a.v[i]/a.t[i]-1)*100);
+      if(st.k==="under"&&n>=3){
+        var act=a.id==="erhv"
+          ? "Kampagnen i uge 48 flyttes, så den ligger ved skifteholdenes mødetider. Jeg aftaler målet med eventholdet på forhånd: 60 nye brugere på to uger."
+          : "Jeg ringer til jeres kontaktperson i denne uge, og vi aftaler en indsats med et konkret mål.";
+        out.push({k:"bad",tag:"Kræver handling",h:a.name+" har ligget under mål i "+n+" uger",p:"Ugens "+fmt(a.v[i])+" ture er "+Math.abs(pct)+" % under målet på "+fmt(a.t[i])+". "+(a.id==="erhv"?"Væksten er gået i stå, og der kommer ikke nye brugere til fra de tre virksomheder.":"Udviklingen er fladet ud."),act:act,ask:a.id==="erhv"?"Beslutning: må kampagnen flyttes til skifteholdenes mødetider?":"Beslutning: hvilken indsats sætter vi i gang?",short:a.name+" er gået i stå. Der er aftalt en ny indsats."});
+      } else if(st.k==="under"){
+        out.push({k:"note",tag:"Holder øje",h:a.name+" ligger under mål i denne uge",p:"Ugens "+fmt(a.v[i])+" ture er "+Math.abs(pct)+" % under målet. Det er endnu ikke et mønster.",act:"Jeg følger tallet i næste uge og tager fat, hvis det gentager sig.",short:null});
+      } else if(st.k==="over"&&pct>=5){
+        out.push({k:"good",pct:pct,tag:"Går godt",h:a.name+" ligger "+pct+" % over mål",p:fmt(a.v[i])+" ture mod et mål på "+fmt(a.t[i])+". Det er den indsats, der bærer væksten lige nu.",act:"Historien skal med i effektnotatet. Jeg finder en bruger, der vil fortælle, hvad det har ændret i hverdagen.",short:a.name+" klarer sig bedre end aftalt."});
+      }
+    });
+    if(i>=6&&!anyHol(i)){
+      var recent=(newU[i]+newU[i-1])/2, before=(newU[i-2]+newU[i-3]+newU[i-4]+newU[i-5])/4;
+      if(recent<before*0.75){
+        var d=Math.round((1-recent/before)*100);
+        out.push({k:"bad",tag:"Kræver handling",h:"Tilgangen af nye brugere er faldet "+d+" %",p:"Effekten af efterårets kampagner klinger af. Uden nye brugere flader antallet af ture ud om få uger.",act:"Jeg foreslår en påmindelse i kommunens egne kanaler. Det er billigere end en ny kampagne, og jeg har teksten klar til jer.",ask:"Beslutning: kan påmindelsen gå ud i kommunens kanaler i næste uge?",short:"Der kommer færre nye brugere til. Vi foreslår en påmindelse i kommunens egne kanaler."});
+      }
+    }
+    var goods=out.filter(function(f){return f.k==="good"}).sort(function(a,b){return b.pct-a.pct});
+    out=out.filter(function(f){return f.k!=="good"||f===goods[0]});
+    var order={bad:0,good:1,note:2};
+    out.sort(function(a,b){return order[a.k]-order[b.k]});
+    if(!out.length) out.push({k:"good",tag:"Går godt",h:"Ingen advarsler i denne uge",p:"Alle fire indsatser følger planen.",act:"Jeg bruger statusmødet på forlængelsen i stedet for på drift.",short:"Alle indsatser følger planen."});
+    return out;
+  }
+  function nextRoad(i){ var now=weeks[i]; for(var j=0;j<ROAD.length;j++){ if(ROAD[j].abs>now) return j; } return ROAD.length-1; }
+
+  // ---------- Visning ----------
+  var nf=new Intl.NumberFormat("da-DK");
+  function fmt(n){return nf.format(Math.round(n))}
+  function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+  function $(id){return document.getElementById(id)}
+  function delta(cur,prev,unit){
+    if(prev==null) return '<span class="flat">første uge</span>';
+    var d=cur-prev, p=prev?Math.round(d/prev*100):0;
+    var c=d>0?"up":d<0?"down":"flat", s=d>0?"+":d<0?"−":"±";
+    return '<span class="'+c+'">'+s+Math.abs(p)+' % mod ugen før</span>';
+  }
+  var state={i:N-1,view:"forv"};
+
+  function renderHead(){
+    var i=state.i,w=weeks[i],T=tot(i),G=tgt(i),pct=Math.round((T/G-1)*100),h;
+    var rel=anyHol(i)?"i en ferieuge":pct===0?"<em>præcis på målet</em>":(pct>0?"<em>"+pct+" % over målet</em>":"<em>"+Math.abs(pct)+" % under målet</em>");
+    if(state.view==="udv"){
+      h="I uge "+w+" kørte borgere og medarbejdere i Fjordby Kommune sammen på "+fmt(T)+" ture, "+rel+".";
+    } else {
+      var worst=flags(i).filter(function(f){return f.k==="bad"})[0];
+      h="Uge "+w+": "+fmt(T)+" samkørte ture, "+rel+"."+(worst?" "+esc(worst.h)+".":"");
+    }
+    $("headline").innerHTML=h;
+    var prev=i>0?i-1:null, km=T*KM, users=Math.round(T/2.9);
+    var k=[];
+    k.push({n:fmt(T),l:"samkørte ture",d:delta(T,prev!=null?tot(prev):null)});
+    if(state.view==="forv"){
+      k.push({n:fmt(users),l:"aktive brugere",d:delta(users,prev!=null?Math.round(tot(prev)/2.9):null)});
+      k.push({n:fmt(newU[i]),l:"nye brugere",d:delta(newU[i],prev!=null?newU[prev]:null)});
+      k.push({n:fmt(km),l:"sparede bilkilometer",d:'<span class="flat">'+nf.format(Math.round(km*CO2/1000*10)/10)+' ton CO₂</span>'});
+    } else {
+      k.push({n:fmt(km),l:"sparede bilkilometer",d:'<span class="flat">i denne uge</span>'});
+      var cum=0; for(var j=0;j<=i;j++) cum+=tot(j)*KM*CO2/1000;
+      k.push({n:nf.format(Math.round(cum*10)/10),l:"ton CO₂ sparet siden maj",d:'<span class="flat">samlet</span>'});
+      k.push({n:fmt(users),l:"borgere bruger ordningen",d:'<span class="flat">aktive i ugen</span>'});
+    }
+    $("kpis").innerHTML=k.map(function(x){return '<div class="kpi"><div class="n">'+x.n+'</div><div class="l">'+x.l+'</div><div class="d">'+x.d+'</div></div>'}).join("");
+  }
+
+  function renderChart(){
+    var W=760,H=290,L=44,R=14,Tp=26,B=34, pw=W-L-R, ph=H-Tp-B;
+    var max=0; for(var i=0;i<N;i++){max=Math.max(max,tot(i),tgt(i))} max=Math.ceil(max/200)*200;
+    function x(i){return L+pw*i/(N-1)} function y(v){return Tp+ph*(1-v/max)}
+    var s='';
+    // feriebånd
+    var run=null; for(var i=0;i<=N;i++){ var h=i<N&&anyHol(i); if(h&&run===null) run=i; if(!h&&run!==null){ s+='<rect x="'+(x(run)-pw/(N-1)/2)+'" y="'+Tp+'" width="'+((i-run)*pw/(N-1))+'" height="'+ph+'" fill="#F2EDE4"/>'; run=null; } }
+    // gitter
+    for(var v=0;v<=max;v+=200){ s+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+y(v)+'" y2="'+y(v)+'" stroke="#DDD7CE" stroke-width="1"/><text x="'+(L-8)+'" y="'+(y(v)+4)+'" text-anchor="end" font-size="11" fill="#6F6A63" font-family="IBM Plex Mono,monospace">'+v+'</text>'; }
+    for(var i=0;i<N;i++){ if((weeks[i]-FIRST)%5===0||i===N-1){ s+='<text x="'+x(i)+'" y="'+(H-12)+'" text-anchor="middle" font-size="11" fill="#6F6A63" font-family="IBM Plex Mono,monospace">'+weeks[i]+'</text>'; } }
+    s+='<text x="'+L+'" y="'+(H-12)+'" text-anchor="end" font-size="11" fill="#6F6A63" font-family="IBM Plex Mono,monospace" dx="-8">uge</text>';
+    // mål
+    var tp=weeks.map(function(_,i){return (i?"L":"M")+x(i).toFixed(1)+" "+y(tgt(i)).toFixed(1)}).join(" ");
+    s+='<path d="'+tp+'" fill="none" stroke="#6F6A63" stroke-width="1.5" stroke-dasharray="5 4"/>';
+    // faktisk (frem til valgt uge fuld, resten svag)
+    var ap=weeks.map(function(_,i){return (i?"L":"M")+x(i).toFixed(1)+" "+y(tot(i)).toFixed(1)}).join(" ");
+    s+='<path d="'+ap+'" fill="none" stroke="#9C4A26" stroke-width="2.5" stroke-linejoin="round" opacity="0.28"/>';
+    var ap2=weeks.slice(0,state.i+1).map(function(_,i){return (i?"L":"M")+x(i).toFixed(1)+" "+y(tot(i)).toFixed(1)}).join(" ");
+    s+='<path d="'+ap2+'" fill="none" stroke="#9C4A26" stroke-width="2.5" stroke-linejoin="round"/>';
+    // kampagner
+    CAMP.forEach(function(c){ var i=c.w-FIRST; s+='<circle cx="'+x(i)+'" cy="'+y(tot(i))+'" r="4.5" fill="#1F1D1A"/><text x="'+x(i)+'" y="'+(y(tot(i))-12)+'" text-anchor="middle" font-size="12" fill="#1F1D1A" font-family="IBM Plex Sans,sans-serif">'+c.label+'</text>'; });
+    // valgt uge
+    var sx=x(state.i), sy=y(tot(state.i));
+    s+='<line x1="'+sx+'" x2="'+sx+'" y1="'+Tp+'" y2="'+(Tp+ph)+'" stroke="#1F1D1A" stroke-width="1"/>';
+    s+='<circle cx="'+sx+'" cy="'+sy+'" r="6" fill="#FAF7F2" stroke="#9C4A26" stroke-width="2.5"/>';
+    var anchor=state.i>N-5?"end":"start", dx=anchor==="end"?-10:10;
+    s+='<text x="'+(sx+dx)+'" y="'+(Tp-8)+'" text-anchor="'+anchor+'" font-size="13" fill="#1F1D1A" font-family="IBM Plex Sans,sans-serif" font-weight="600">Uge '+weeks[state.i]+': '+fmt(tot(state.i))+' ture</text>';
+    // klikfelter
+    for(var i=0;i<N;i++){ s+='<rect data-i="'+i+'" x="'+(x(i)-pw/(N-1)/2)+'" y="'+Tp+'" width="'+(pw/(N-1))+'" height="'+ph+'" fill="transparent" style="cursor:pointer"><title>Uge '+weeks[i]+'</title></rect>'; }
+    $("chart").innerHTML=s;
+  }
+
+  function spark(a,i){
+    var from=Math.max(0,i-7), pts=a.v.slice(from,i+1), mx=Math.max.apply(null,pts.concat(a.t.slice(from,i+1)))||1;
+    var w=90,h=26; if(pts.length<2) return "";
+    var d=pts.map(function(v,k){return (k?"L":"M")+(w*k/(pts.length-1)).toFixed(1)+" "+(h-3-(h-6)*v/mx).toFixed(1)}).join(" ");
+    return '<svg class="spark" viewBox="0 0 '+w+' '+h+'" aria-hidden="true"><path d="'+d+'" fill="none" stroke="#9C4A26" stroke-width="1.8"/></svg>';
+  }
+  function renderAreas(){
+    var i=state.i;
+    $("areas").innerHTML=AREAS.map(function(a){
+      var st=status(a,i), scale=Math.max(a.v[i],a.t[i])*1.15, vw=Math.min(100,a.v[i]/scale*100), tw=a.t[i]/scale*100;
+      return '<tr><td class="name">'+a.name+'<small>'+a.who+'</small></td><td class="num">'+fmt(a.v[i])+'</td><td class="num hide-s">'+fmt(a.t[i])+'</td>'+
+        '<td class="hide-s"><div class="bar"><span style="width:'+vw.toFixed(1)+'%"></span><b style="left:'+tw.toFixed(1)+'%"></b></div></td>'+
+        '<td><span class="pill '+st.k+'">'+st.txt+'</span></td><td class="hide-s">'+spark(a,i)+'</td></tr>';
+    }).join("");
+    $("plain").innerHTML=AREAS.map(function(a){
+      var st=status(a,i);
+      var tail=st.k==="over"?"Det går bedre end aftalt.":st.k==="ok"?"Det følger planen.":st.k==="under"?"Her er vi ikke i mål endnu.":"Tallet er lavt på grund af ferie.";
+      return '<li><strong>'+a.name+':</strong> '+a.plain+' '+tail+'</li>';
+    }).join("");
+  }
+  function renderFlags(){
+    var f=flags(state.i);
+    if(state.view==="udv"){
+      var s=f.filter(function(x){return x.short}).slice(0,3);
+      $("flags").innerHTML=s.map(function(x){return '<div class="flag '+(x.k==="good"?"good":x.k==="note"?"note":"")+'" style="grid-template-columns:1fr"><div><p>'+esc(x.short)+'</p></div></div>'}).join("");
+    } else {
+      $("flags").innerHTML=f.map(function(x){return '<div class="flag '+(x.k==="good"?"good":x.k==="note"?"note":"")+'"><div><div class="tag">'+x.tag+'</div><h3>'+esc(x.h)+'</h3><p>'+esc(x.p)+'</p></div><div><div class="tag">Det gør jeg</div><p>'+esc(x.act)+'</p></div></div>'}).join("");
+    }
+    var items=['Ugens tal i korte træk <small>(5 min.)</small>'];
+    f.forEach(function(x){
+      if(x.k==="bad") items.push(esc(x.h)+' <small>'+esc(x.ask||"")+'</small>');
+      if(x.k==="good"&&x.h.indexOf("Ingen")!==0) items.push(esc(x.h)+' <small>Hvem kan fortælle historien i effektnotatet?</small>');
+    });
+    var nr=ROAD[nextRoad(state.i)];
+    items.push(nr.what+' ('+nr.when.toLowerCase()+') <small>Hvilke tal vil I have med, og i hvilken form?</small>');
+    items.push('Eventuelt og næste møde');
+    $("agenda").innerHTML=items.map(function(t){return '<li>'+t+'</li>'}).join("");
+  }
+  function renderRoad(){
+    var now=weeks[state.i], nx=nextRoad(state.i);
+    $("road").innerHTML=ROAD.map(function(r,j){
+      var d=r.abs-now;
+      return '<li class="'+(j===nx?"next":"")+'"><div class="in">om '+d+' uger</div><div class="what">'+r.what+'</div><div class="when">'+r.when+'</div>'+(state.view==="forv"?'<div class="mine">'+r.mine+'</div>':'')+'</li>';
+    }).join("");
+  }
+  function render(){
+    document.body.setAttribute("data-view",state.view);
+    $("wk").value=state.i; $("wkout").textContent="Uge "+weeks[state.i];
+    $("prev").disabled=state.i===0; $("next").disabled=state.i===N-1;
+    renderHead(); renderChart(); renderAreas(); renderFlags(); renderRoad();
+  }
+  function setWeek(i){ state.i=Math.max(0,Math.min(N-1,i)); render(); }
+  $("wk").addEventListener("input",function(e){setWeek(+e.target.value)});
+  $("prev").addEventListener("click",function(){setWeek(state.i-1)});
+  $("next").addEventListener("click",function(){setWeek(state.i+1)});
+  $("chart").addEventListener("click",function(e){var t=e.target.getAttribute&&e.target.getAttribute("data-i"); if(t!==null&&t!=="") setWeek(+t)});
+  Array.prototype.forEach.call(document.querySelectorAll(".seg button"),function(b){
+    b.addEventListener("click",function(){
+      state.view=b.getAttribute("data-v");
+      Array.prototype.forEach.call(document.querySelectorAll(".seg button"),function(o){o.setAttribute("aria-pressed",o===b?"true":"false")});
+      render();
+    });
+  });
+  render();
+  if(typeof window!=="undefined") window.__report={weeks:weeks,AREAS:AREAS,tot:tot,tgt:tgt,flags:flags,newU:newU};
+})();
+</script>
+</body>
+</html>
